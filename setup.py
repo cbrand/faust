@@ -181,7 +181,7 @@ with open("README.md") as readme_file:
 
 def do_setup(**kwargs):
     setup(
-        name="faust-streaming",
+        name="xcnt-faust-streaming",
         version=meta["version"],
         description=meta["doc"],
         long_description=long_description,
