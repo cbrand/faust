@@ -66,7 +66,7 @@ class ProducerBuffer(Service, ProducerBufferT):
                     await asyncio.wait_for(self.message_sent.wait(), timeout=0.1)
                     flushed_messages += 1
                 except asyncio.TimeoutError:
-                    ...
+                    return flushed_messages
             else:
                 return flushed_messages
 
