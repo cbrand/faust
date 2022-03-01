@@ -65,7 +65,9 @@ class TestProducerBuffer:
         flush_atmost_call_count = 0
 
         async def flush_atmost(max_messages: Optional[int]) -> int:
-            assert max_messages is None or max_messages == buf.max_messages, "Max messages set not to the max messages buffer"
+            assert (
+                max_messages is None or max_messages == buf.max_messages
+            ), "Max messages set not to the max messages buffer"
             nonlocal flush_atmost_call_count
             flush_atmost_call_count += 1
 
@@ -75,22 +77,34 @@ class TestProducerBuffer:
         buf.flush_atmost = flush_atmost
         await buf.start()
         original_size = buf.__class__.size
+        loop = asyncio.get_event_loop()
         try:
             buf.__class__.size = PropertyMock(return_value=20)
 
-            task = asyncio.create_task(buf.wait_until_ebb())
+            task = loop.create_task(buf.wait_until_ebb())
             await asyncio.sleep(0)
             assert flush_atmost_call_count == 1
-            assert not task.done(), "The wait_until_ebb has been finished even though flush atmost did not return"
+            assert not task.done(), (
+                "The wait_until_ebb has been finished even "
+                "though flush atmost did not return"
+            )
 
             buf.__class__.size = PropertyMock(return_value=10)
             await asyncio.sleep(0)
-            assert task.done(), "The wait_until_ebb did not complete even though the size is beneath the max size"
+            assert task.done(), (
+                "The wait_until_ebb did not complete even "
+                "though the size is beneath the max size"
+            )
 
-            assert flush_atmost_call_count > 0, "The wait_until_ebb did not call the flush_atmost function"
-            task = asyncio.create_task(buf.wait_until_ebb())
+            assert (
+                flush_atmost_call_count > 0
+            ), "The wait_until_ebb did not call the flush_atmost function"
+            task = loop.create_task(buf.wait_until_ebb())
             await asyncio.sleep(0)
-            assert task.done(), "The wait_until_ebb function did not finish even though the buffer is small enough"
+            assert task.done(), (
+                "The wait_until_ebb function did not finish even "
+                "though the buffer is small enough"
+            )
         finally:
             buf.__class__.size = original_size
             await buf.stop()
@@ -143,7 +157,6 @@ class TestProducerBuffer:
         finally:
             await buf.stop()
 
-
     @pytest.mark.asyncio
     async def test_flush_atmost_with_simulated_threaded_behavior(self, *, buf):
         def create_send_pending_mock(max_messages):
@@ -181,7 +194,9 @@ class TestProducerBuffer:
             loop = asyncio.get_event_loop()
             task = loop.create_task(waiting)
             await asyncio.sleep(0)
-            assert not task.done(), "Task has completed even though not all events have been issued"
+            assert (
+                not task.done()
+            ), "Task has completed even though not all events have been issued"
             buf.__class__.size = PropertyMock(return_value=0)
             await asyncio.sleep(0.2)
             assert task.done(), "Task has not been completed even though queue is None"
