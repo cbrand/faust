@@ -1,6 +1,7 @@
 """Monitor - sensor tracking metrics."""
 import asyncio
 import re
+import weakref
 from collections import deque
 from http import HTTPStatus
 from statistics import median
